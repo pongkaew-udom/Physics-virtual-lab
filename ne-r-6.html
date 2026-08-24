@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ห้องปฏิบัติการเสมือนจริง: Newton's Rings</title>
+    <style>
+        :root {
+            --primary: #0f172a;
+            --primary-accent: #8b5cf6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --bg-main: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-main: #334155;
+            --border: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Sarabun', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 25px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        @media (max-width: 968px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--primary);
+            border-bottom: 2px solid var(--bg-main);
+            padding-bottom: 8px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .control-group label span.value {
+            color: var(--primary-accent);
+        }
+
+        .control-group input[type="range"], .control-group select {
+            width: 100%;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+        }
+
+        .btn-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        button.action-btn {
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-reset { background: #e2e8f0; color: var(--text-main); }
+        .btn-reset:hover { background: #cbd5e1; }
+        .btn-log { background: var(--success); color: white; }
+        .btn-log:hover { opacity: 0.9; }
+
+        .visual-workspace {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .visual-workspace {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .lab-space {
+            display: flex;
+            flex-direction: column;
+            background: #050505;
+            border-radius: 12px;
+            height: 380px;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border: 3px solid #1e293b;
+        }
+
+        .lab-subtitle {
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            color: #94a3b8;
+            font-size: 0.8rem;
+            z-index: 5;
+            background: rgba(0,0,0,0.6);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .viewfinder {
+            width: 320px;
+            height: 320px;
+            border-radius: 50%;
+            border: 4px solid #475569;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: black;
+        }
+
+        canvas {
+            position: absolute;
+        }
+
+        .crosshair {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            border-radius: 50%;
+        }
+        .crosshair::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 5%;
+            width: 90%;
+            height: 1px;
+            background: rgba(255,255,255,0.2);
+        }
+        .crosshair::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 5%;
+            width: 1px;
+            height: 90%;
+            background: rgba(255,255,255,0.2);
+        }
+
+        .info-box {
+            background-color: #f8fafc;
+            border-left: 4px solid var(--primary-accent);
+            padding: 12px;
+            border-radius: 0 6px 6px 0;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            margin-top: 10px;
+        }
+
+        .formula {
+            text-align: center;
+            font-family: monospace;
+            font-weight: bold;
+            background: #e2e8f0;
+            padding: 6px;
+            border-radius: 4px;
+            margin: 6px 0;
+            color: #1e293b;
+        }
+
+        .bottom-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .table-responsive {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: white;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.82rem;
+        }
+
+        th {
+            background-color: #f1f5f9;
+            color: var(--primary);
+            font-weight: 600;
+            padding: 12px 10px;
+            position: sticky;
+            top: 0;
+            border-bottom: 2px solid var(--border);
+            text-align: center;
+        }
+
+        td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #f1f5f9;
+            text-align: center;
+        }
+
+        tr:nth-child(even) { background-color: #f8fafc; }
+        
+        .error-high { color: var(--danger); font-weight: bold; }
+        .error-low { color: var(--success); font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>ห้องปฏิบัติการเสมือนจริง: วงแหวนนิวตัน (Newton's Rings)</h1>
+        <p>วิเคราะห์ความเชื่อมโยงระหว่างรัศมีความโค้งเลนส์ R ลำดับวงแหวน m และความแม่นยำในการวัดค่าเชิงทัศนศาสตร์</p>
+    </header>
+
+    <div class="main-container">
+        <!-- แผงควบคุมระบบ (ซ้าย) -->
+        <div class="card">
+            <div class="card-title">⚙️ ปรับแต่งตัวแปรทดลอง</div>
+
+            <!-- เลือกเลเซอร์ / ความยาวคลื่น -->
+            <div class="control-group">
+                <label for="param-laser">แหล่งกำเนิดแสงเลเซอร์ (ค่าจริง)</label>
+                <select id="param-laser" onchange="updateLab()">
+                    <option value="632.8">เลเซอร์ฮีเลียม-นีออน (แดง, 632.8 nm)</option>
+                    <option value="532.0">เลเซอร์ไดโอด (เขียว, 532.0 nm)</option>
+                    <option value="405.0">เลเซอร์ไดโอด (ม่วง/น้ำเงิน, 405.0 nm)</option>
+                </select>
+            </div>
+
+            <!-- ปรับรัศมีความโค้งเลนส์ R -->
+            <div class="control-group">
+                <label>รัศมีความโค้งเลนส์ (R)
+                    <span class="value" id="val-r-lens">2.00 m</span>
+                </label>
+                <input type="range" id="param-r-lens" min="1.00" max="5.00" step="0.50" value="2.00" oninput="updateLab()">
+            </div>
+
+            <!-- เลือกวงแหวนมืดลำดับที่ m -->
+            <div class="control-group">
+                <label>วงแหวนมืดลำดับที่ต้องการวัด (m)
+                    <span class="value" id="val-m">1</span>
+                </label>
+                <input type="range" id="param-m" min="1" max="15" step="1" value="1" oninput="updateLab()">
+            </div>
+
+            <!-- สไลเดอร์เล็งไม้บรรทัดวัดรัศมีจริง (r_m) -->
+            <div class="control-group">
+                <label style="color: #d97706;">📏 เลื่อนไม้บรรทัดเพื่อวัดรัศมี (rₘ)
+                    <span class="value" id="val-meas-r" style="color: #d97706; font-weight: bold;">0.000 mm</span>
+                </label>
+                <input type="range" id="param-meas-r" min="0" max="5.0" step="0.001" value="0" oninput="updateMeasurement()">
+            </div>
+
+            <div class="btn-container">
+                <button class="action-btn btn-reset" onclick="resetLab()">🔄 รีเซ็ตแล็บ</button>
+                <button class="action-btn btn-log" onclick="logData()">📥 บันทึก&คำนวณ</button>
+            </div>
+
+            <!-- กล่องคำอธิบายทฤษฎี -->
+            <div class="info-box">
+                <div style="font-weight: bold; color: var(--primary);">💡 ข้อสังเกตเชิงฟิสิกส์:</div>
+                <p>• <b>เลนส์ที่มี R มากขึ้น</b> จะขยายขนาดริ้วให้ใหญ่ขึ้น ช่วยลดความผิดพลาดสัมพัทธ์จากการเล็งไม้บรรทัด</p>
+                <p>• <b>ลำดับวงแหวน m ที่สูงขึ้น</b> ทำให้รัศมีกว้างขึ้น แต่ริ้วรอบนอกจะชิดกันมากขึ้น ทำให้ต้องอาศัยการเล็งที่ละเอียดมากยิ่งขึ้นตามไปด้วย</p>
+                <div class="formula">λ_cal = rₘ² / (m · R)</div>
+            </div>
+        </div>
+
+        <!-- แผงแสดงผลจำลองภาพทางทัศนศาสตร์ (ขวา) -->
+        <div class="card" style="padding: 20px;">
+            <div class="card-title">🔬 การจำลองและภาพแสดงระบบทัศนศาสตร์ (Newton's Rings Panel)</div>
+            
+            <div class="visual-workspace">
+                <!-- ส่วนที่ 1: รูปจัดอุปกรณ์ผ่าซีกเลนส์สัมผัสแผ่นแก้ว -->
+                <div class="lab-space">
+                    <div class="lab-subtitle">Setup Schematic (Plano-Convex Lens)</div>
+                    <canvas id="setupCanvas" width="380" height="360" style="position:relative;"></canvas>
+                </div>
+
+                <!-- ส่วนที่ 2: ฉากรับภาพวงแหวนนิวตันพร้อมเส้นไม้บรรทัดขยับได้ -->
+                <div class="lab-space">
+                    <div class="lab-subtitle">Newton's Rings View (Microscope/Screen)</div>
+                    <div class="viewfinder">
+                        <canvas id="fringeCanvas" width="320" height="320"></canvas>
+                        <div class="crosshair"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ตารางบันทึกผลการทดลอง (ล่าง) -->
+    <div class="bottom-container">
+        <div class="card">
+            <div class="card-title">📊 ตารางบันทึกและคำนวณค่าความคลาดเคลื่อน (Newton's Rings Analysis Table)</div>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ครั้งที่</th>
+                            <th>เลเซอร์เป้าหมาย</th>
+                            <th>λ ค่าจริง (nm)</th>
+                            <th>รัศมีความโค้ง R (m)</th>
+                            <th>ลำดับวงมืด (m)</th>
+                            <th>รัศมีที่วัดได้ rₘ (mm)</th>
+                            <th>λ จากการทดลอง (nm)</th>
+                            <th>ความคลาดเคลื่อน (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="log-table-body">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let logCount = 0;
+        const mmToPixelScale = 55; 
+
+        const fringeCanvas = document.getElementById('fringeCanvas');
+        const ctxFringe = fringeCanvas.getContext('2d');
+        const setupCanvas = document.getElementById('setupCanvas');
+        const ctxSetup = setupCanvas.getContext('2d');
+
+        function getLaserColor(wave) {
+            if (wave === 632.8) return { r: 255, g: 0, b: 0, hex: "#ff0000", name: "He-Ne (Red)" };
+            if (wave === 532.0) return { r: 0, g: 255, b: 0, hex: "#00ff00", name: "Diode (Green)" };
+            if (wave === 405.0) return { r: 150, g: 0, b: 255, hex: "#9600ff", name: "Diode (Blue/Violet)" };
+            return { r: 255, g: 255, b: 255, hex: "#ffffff", name: "Unknown" };
+        }
+
+        function updateMeasurement() {
+            const measR = parseFloat(document.getElementById('param-meas-r').value);
+            document.getElementById('val-meas-r').innerText = measR.toFixed(3) + " mm";
+            renderFringePattern();
+        }
+
+        function drawSetupSchematic(wave, R_lens) {
+            ctxSetup.clearRect(0, 0, setupCanvas.width, setupCanvas.height);
+            ctxSetup.fillStyle = "#090d16";
+            ctxSetup.fillRect(0, 0, setupCanvas.width, setupCanvas.height);
+
+            const colorInfo = getLaserColor(wave);
+            const contactY = 220; 
+
+            ctxSetup.fillStyle = "rgba(148, 163, 184, 0.3)";
+            ctxSetup.fillRect(40, contactY, 300, 20);
+            ctxSetup.strokeStyle = "#94a3b8";
+            ctxSetup.lineWidth = 1.5;
+            ctxSetup.strokeRect(40, contactY, 300, 20);
+            ctxSetup.fillStyle = "#94a3b8";
+            ctxSetup.font = "11px Sarabun";
+            ctxSetup.fillText("Flat Glass Plate", 45, contactY + 15);
+
+            const lensSagitta = 45 / (R_lens * 0.8); 
+            const lensFlatY = contactY - lensSagitta; 
+
+            ctxSetup.beginPath();
+            ctxSetup.moveTo(60, lensFlatY);
+            ctxSetup.quadraticCurveTo(190, contactY + lensSagitta, 320, lensFlatY);
+            ctxSetup.lineTo(320, lensFlatY - 15); 
+            ctxSetup.lineTo(60, lensFlatY - 15);
+            ctxSetup.closePath();
+            
+            ctxSetup.fillStyle = "rgba(56, 189, 248, 0.25)";
+            ctxSetup.fill();
+            ctxSetup.strokeStyle = "#38bdf8";
+            ctxSetup.lineWidth = 1.5;
+            ctxSetup.stroke();
+            
+            ctxSetup.fillStyle = "#38bdf8";
+            ctxSetup.fillText(`Plano-Convex Lens (R = ${R_lens.toFixed(2)} m)`, 65, lensFlatY - 22);
+
+            ctxSetup.strokeStyle = colorInfo.hex;
+            ctxSetup.shadowColor = colorInfo.hex;
+            ctxSetup.lineWidth = 2;
+            ctxSetup.shadowBlur = 5;
+            
+            ctxSetup.beginPath();
+            ctxSetup.moveTo(130, 40); ctxSetup.lineTo(130, lensFlatY);
+            ctxSetup.moveTo(190, 40); ctxSetup.lineTo(190, contactY); 
+            ctxSetup.moveTo(250, 40); ctxSetup.lineTo(250, lensFlatY);
+            ctxSetup.stroke();
+            
+            ctxSetup.strokeStyle = "rgba(" + colorInfo.r + "," + colorInfo.g + "," + colorInfo.b + ", 0.5)";
+            ctxSetup.beginPath();
+            ctxSetup.moveTo(130, lensFlatY); ctxSetup.lineTo(130, 20);
+            ctxSetup.moveTo(190, contactY); ctxSetup.lineTo(190, 20);
+            ctxSetup.moveTo(250, lensFlatY); ctxSetup.lineTo(250, 20);
+            ctxSetup.stroke();
+
+            ctxSetup.shadowBlur = 0;
+            ctxSetup.fillStyle = "#e2e8f0";
+            ctxSetup.fillText("Laser Beam ↓", 155, 30);
+        }
+
+        function renderFringePattern() {
+            const wave = parseFloat(document.getElementById('param-laser').value); 
+            const R_lens = parseFloat(document.getElementById('param-r-lens').value); 
+            const measR = parseFloat(document.getElementById('param-meas-r').value);
+
+            const cx = fringeCanvas.width / 2;
+            const cy = fringeCanvas.height / 2;
+            const maxRadius = fringeCanvas.width / 2;
+
+            ctxFringe.clearRect(0, 0, fringeCanvas.width, fringeCanvas.height);
+            ctxFringe.fillStyle = "black";
+            ctxFringe.fillRect(0, 0, fringeCanvas.width, fringeCanvas.height);
+
+            const color = getLaserColor(wave);
+
+            for (let r = 0; r < maxRadius; r++) {
+                const r_real = r / (mmToPixelScale * 1000); 
+                const d = Math.pow(r_real, 2) / (2 * R_lens); 
+                const delta = (4 * Math.PI * d * 1e9) / wave + Math.PI; 
+                
+                const intensity = Math.pow(Math.sin(delta / 2), 2); 
+
+                ctxFringe.beginPath();
+                ctxFringe.arc(cx, cy, r, 0, 2 * Math.PI);
+                ctxFringe.strokeStyle = `rgba(${color.r}, ${color.g}, ${color.b}, ${intensity})`;
+                ctxFringe.lineWidth = 1;
+                ctxFringe.stroke();
+            }
+
+            if (measR > 0) {
+                const pixelR = measR * mmToPixelScale;
+                ctxFringe.beginPath();
+                ctxFringe.arc(cx, cy, pixelR, 0, 2 * Math.PI);
+                ctxFringe.strokeStyle = "#fffb00"; 
+                ctxFringe.lineWidth = 2.5;
+                ctxFringe.stroke();
+            }
+        }
+
+        function updateLab() {
+            const wave = parseFloat(document.getElementById('param-laser').value); 
+            const R_lens = parseFloat(document.getElementById('param-r-lens').value); 
+            const m = parseInt(document.getElementById('param-m').value); 
+
+            document.getElementById('val-r-lens').innerText = R_lens.toFixed(2) + " m";
+            document.getElementById('val-m').innerText = m;
+
+            const maxMeasurableR = Math.sqrt(16 * (wave / 1e9) * R_lens) * 1000 * 1.05;
+            document.getElementById('param-meas-r').max = maxMeasurableR.toFixed(3);
+
+            drawSetupSchematic(wave, R_lens);
+            renderFringePattern();
+        }
+
+        function logData() {
+            const waveTrue = parseFloat(document.getElementById('param-laser').value);
+            const R_lens = parseFloat(document.getElementById('param-r-lens').value);
+            const m = parseInt(document.getElementById('param-m').value);
+            const measR = parseFloat(document.getElementById('param-meas-r').value); 
+
+            if (measR === 0) {
+                alert("กรุณาเลื่อนไม้บรรทัดวัดรัศมี (rₘ) ให้ตรงแนววงแหวนมืดก่อนกดบันทึกผลครับ");
+                return;
+            }
+
+            logCount++;
+            const r_meter = measR / 1000;
+            const waveCal = (Math.pow(r_meter, 2) / (m * R_lens)) * 1e9;
+            const percentError = (Math.abs(waveCal - waveTrue) / waveTrue) * 100;
+            
+            const laserInfo = getLaserColor(waveTrue);
+            const tbody = document.getElementById('log-table-body');
+            const row = document.createElement('tr');
+            
+            const errorClass = percentError > 3.0 ? 'error-high' : 'error-low';
+
+            row.innerHTML = `
+                <td><b>${logCount}</b></td>
+                <td style="text-align:left; padding-left:15px;">${laserInfo.name}</td>
+                <td>${waveTrue.toFixed(1)} nm</td>
+                <td>${R_lens.toFixed(2)} m</td>
+                <td>${m}</td>
+                <td style="color:#d97706; font-weight:bold;">${measR.toFixed(3)} mm</td>
+                <td style="background:#fef3c7; font-weight:bold;">${waveCal.toFixed(1)} nm</td>
+                <td class="${errorClass}">${percentError.toFixed(2)} %</td>
+            `;
+            tbody.appendChild(row);
+        }
+
+        function resetLab() {
+            document.getElementById('param-laser').value = "632.8";
+            document.getElementById('param-r-lens').value = "2.00";
+            document.getElementById('param-m').value = "1";
+            document.getElementById('param-meas-r').value = "0";
+            document.getElementById('log-table-body').innerHTML = "";
+            logCount = 0;
+            updateMeasurement();
+            updateLab();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            updateLab();
+        });
+    </script>
+</body>
+</html>

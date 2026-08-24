@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ห้องปฏิบัติการเสมือนจริง: ปรากฏการณ์ซีมาน (Zeeman Effect)</title>
+    <style>
+        :root {
+            --primary: #1e1b4b;
+            --primary-accent: #4f46e5;
+            --success: #059669;
+            --danger: #dc2626;
+            --bg-main: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --border: #cbd5e1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Sarabun', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 25px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        @media (max-width: 968px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            padding: 25px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--primary);
+            border-bottom: 2px solid var(--bg-main);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-main);
+        }
+
+        .control-group label span.value {
+            color: var(--primary-accent);
+        }
+
+        .control-group input[type="range"], .control-group select {
+            width: 100%;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+        }
+
+        .switch-btn {
+            width: 100%;
+            padding: 12px;
+            background: #475569;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 15px;
+            transition: all 0.2s;
+        }
+
+        .switch-btn.active {
+            background: var(--danger);
+            box-shadow: 0 0 10px rgba(220, 38, 38, 0.5);
+        }
+
+        .btn-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        button.action-btn {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-reset { background: #e2e8f0; color: var(--text-main); }
+        .btn-reset:hover { background: #cbd5e1; }
+        .btn-log { background: var(--success); color: white; }
+        .btn-log:hover { opacity: 0.9; }
+
+        .visual-workspace {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .visual-workspace {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .lab-space {
+            display: flex;
+            flex-direction: column;
+            background: #050505;
+            border-radius: 16px;
+            height: 420px;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border: 4px solid #334155;
+            overflow: hidden;
+        }
+
+        .lab-subtitle {
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            color: #94a3b8;
+            font-size: 0.8rem;
+            z-index: 5;
+            background: rgba(0,0,0,0.7);
+            padding: 4px 10px;
+            border-radius: 6px;
+            border: 1px solid #475569;
+        }
+
+        /* กล้องมองภาพระบบทางแสง */
+        .optics-view {
+            width: 360px;
+            height: 360px;
+            border-radius: 50%;
+            border: 8px double #475569;
+            position: relative;
+            background: radial-gradient(circle, #050505 0%, #000000 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 0 50px rgba(255,255,255,0.05);
+        }
+
+        /* เส้นเป้าเล็งไม้บรรทัดวัดรัศมี (Crosshair) */
+        .crosshair-h {
+            position: absolute;
+            width: 90%;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.2);
+            pointer-events: none;
+        }
+        
+        .crosshair-v {
+            position: absolute;
+            width: 1px;
+            height: 90%;
+            background: rgba(255, 255, 255, 0.2);
+            pointer-events: none;
+        }
+
+        /* ไม้บรรทัดสเกลวัด */
+        .ruler-scale {
+            position: absolute;
+            width: 80%;
+            bottom: 20px;
+            height: 20px;
+            border-bottom: 2px solid rgba(255,255,255,0.4);
+            display: flex;
+            justify-content: space-between;
+            color: rgba(255,255,255,0.6);
+            font-size: 0.7rem;
+        }
+
+        .ruler-tick {
+            width: 1px;
+            height: 6px;
+            background: rgba(255,255,255,0.4);
+            position: relative;
+        }
+        .ruler-tick::after {
+            content: attr(data-val);
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        canvas {
+            position: absolute;
+        }
+
+        .info-badge {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            background: #334155;
+            color: #f8fafc;
+        }
+
+        .formula-box {
+            background-color: #f8fafc;
+            border-left: 4px solid var(--primary-accent);
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            margin-top: 15px;
+        }
+
+        .formula-display {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            text-align: center;
+            padding: 10px;
+            background: #e2e8f0;
+            border-radius: 6px;
+            margin: 8px 0;
+            color: var(--primary);
+            font-size: 1rem;
+        }
+
+        .bottom-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .table-responsive {
+            max-height: 280px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: white;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background-color: #f1f5f9;
+            color: var(--primary);
+            font-weight: 600;
+            padding: 12px 16px;
+            position: sticky;
+            top: 0;
+            border-bottom: 2px solid var(--border);
+            text-align: center;
+        }
+
+        td {
+            padding: 10px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            color: var(--text-main);
+            text-align: center;
+        }
+
+        tr:nth-child(even) { background-color: #f8fafc; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>ห้องปฏิบัติการเสมือนจริง: ปรากฏการณ์ซีมาน (Zeeman Effect)</h1>
+        <p>ศึกษาการแยกออกของระดับพลังงานของอะตอมก๊าซภายใต้สนามแม่เหล็กภายนอกผ่านวงแหวนแทรกสอด</p>
+    </header>
+
+    <div class="main-container">
+        <!-- แผงควบคุมด้านซ้าย -->
+        <div class="card">
+            <div class="card-title">⚙️ แผงควบคุมระบบ</div>
+
+            <!-- เลือกชนิดของก๊าซ -->
+            <div class="control-group">
+                <label for="param-gas">ชนิดของก๊าซในหลอดทดลอง</label>
+                <select id="param-gas" onchange="updateSystem()">
+                    <option value="Neon">นีออน (Neon - สีแดง/ส้ม, λ = 585.2 nm)</option>
+                    <option value="Mercury">ปรอท (Mercury - สีเขียว, λ = 546.1 nm)</option>
+                    <option value="Cadmium">แคดเมียม (Cadmium - สีแดง, λ = 643.8 nm)</option>
+                </select>
+            </div>
+
+            <!-- ปุ่มเปิด/ปิดสนามแม่เหล็ก -->
+            <button id="btn-magnet" class="switch-btn" onclick="toggleMagnet()">🧲 จ่ายสนามแม่เหล็ก: OFF</button>
+
+            <!-- ปรับขนาดสนามแม่เหล็ก B -->
+            <div class="control-group">
+                <label>ความเข้มสนามแม่เหล็ก (B)
+                    <span class="value" id="val-b">0.00 Tesla</span>
+                </label>
+                <input type="range" id="param-b" min="0" max="1.5" step="0.05" value="0" disabled oninput="updateSystem()">
+            </div>
+
+            <!-- ค่าคงที่ทางแสงที่จำเป็นต่อการคำนวณจริง -->
+            <div style="font-weight: bold; font-size: 0.9rem; margin-top: 15px; margin-bottom: 8px; color: var(--primary);">🛠️ ค่าคงที่อุปกรณ์ทางแสง (Optical Constants)</div>
+            
+            <div class="control-group">
+                <label>ความหนาช่องอากาศ Etalon (d)
+                    <span class="value" id="val-d">4.00 mm</span>
+                </label>
+                <input type="range" id="param-d" min="2.0" max="6.0" step="0.5" value="4.0" oninput="updateSystem()">
+            </div>
+
+            <div class="control-group">
+                <label>ความยาวโฟกัสของเลนส์ (f)
+                    <span class="value" id="val-f">300 mm</span>
+                </label>
+                <input type="range" id="param-f" min="150" max="450" step="50" value="300" oninput="updateSystem()">
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid var(--border); margin-bottom: 15px; margin-top: 15px;">
+
+            <!-- ผลการคำนวณสดทางฟิสิกส์ -->
+            <div class="control-group" style="background: var(--bg-main); padding: 12px; border-radius: 8px; font-size: 0.85rem; line-height: 1.6;">
+                <div style="font-weight: bold; color: var(--primary); margin-bottom: 4px;">📊 ค่าทางทฤษฎีและการวัดสด:</div>
+                <div>• พลังงานที่แยกออก (ΔE): <span id="lbl-de" style="font-weight:bold; color:var(--danger);">0.00 eV</span></div>
+                <div>• รัศมีวงแหวนหลัก (R₀): <span id="lbl-r0" style="font-weight:bold;">0.00 mm</span></div>
+                <div>• รัศมีวงในที่แยก (R₁): <span id="lbl-r1" style="font-weight:bold; color:var(--primary-accent);">0.00 mm</span></div>
+                <div>• รัศมีวงนอกที่แยก (R₂): <span id="lbl-r2" style="font-weight:bold; color:var(--success);">0.00 mm</span></div>
+            </div>
+
+            <div class="btn-container">
+                <button class="action-btn btn-reset" onclick="resetLab()">🔄 รีเซ็ต</button>
+                <button class="action-btn btn-log" onclick="logData()">📥 บันทึกผล</button>
+            </div>
+        </div>
+
+        <!-- แผงแสดงผลจำลองภาพทางแสงด้านขวา -->
+        <div class="card" style="padding: 20px; margin-bottom: 25px;">
+            <div class="card-title" style="position: relative;">
+                🔬 ระบบการจำลองเชิงทัศนศาสตร์และฉากรับภาพ (Optics & Interference Panel)
+                <div id="status-badge" class="info-badge">สนามแม่เหล็ก: ปิดอยู่</div>
+            </div>
+            
+            <div class="visual-workspace">
+                <!-- ส่วนที่ 1: แผงภาพจำลองชุดการทดลองจริง (Top-down View Setup) -->
+                <div class="lab-space">
+                    <div class="lab-subtitle">Experimental Setup Schematic (Top View)</div>
+                    <canvas id="setupCanvas" width="380" height="420" style="position:relative;"></canvas>
+                </div>
+
+                <!-- ส่วนที่ 2: ฉากรับภาพวงแหวนผ่านกล้องมองส่อง -->
+                <div class="lab-space">
+                    <div class="lab-subtitle">Optics Viewfinder (Interference Fringe)</div>
+                    <div class="optics-view">
+                        <div class="crosshair-h"></div>
+                        <div class="crosshair-v"></div>
+                        
+                        <div class="ruler-scale">
+                            <div class="ruler-tick" data-val="-2"></div>
+                            <div class="ruler-tick" data-val="-1"></div>
+                            <div class="ruler-tick" data-val="0"></div>
+                            <div class="ruler-tick" data-val="1"></div>
+                            <div class="ruler-tick" data-val="2"></div>
+                        </div>
+
+                        <canvas id="ringCanvas" width="360" height="360"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- กล่องอธิบายสมการคำนวณตามแล็บจริง -->
+            <div class="formula-box">
+                <div style="font-weight: bold; margin-bottom: 5px; color: var(--primary);">📝 สมการการวิเคราะห์และคำนวณผลการทดลอง:</div>
+                <p>ในการคำนวณหาพลังงานที่แยกออก (ΔE) จากการวัดขนาดความยาวทางกายภาพของวงแหวนแทรกสอดผ่านกล้อง CCD จะคำนวณผ่านคุณลักษณะของ Fabry-Pérot Interferometer ดังนี้:</p>
+                <div class="formula-display">
+                    ΔE = (h · c / 4d) · ((R₂² - R₁²) / f²)
+                </div>
+                <p><b>คำอธิบายตัวแปร:</b></p>
+                <ul style="margin-left: 20px; margin-top: 5px;">
+                    <li><b>h (Planck constant)</b> = 4.1357 × 10⁻¹⁵ eV·s</li>
+                    <li><b>c (Speed of light)</b> = 3 × 10⁸ m/s</li>
+                    <li><b>d</b> = ความหนาของช่องอากาศภายใน Etalon (mm)</li>
+                    <li><b>f</b> = ความยาวโฟกัสของเลนส์วัตถุที่ใช้สร้างวงแหวนภาพแทรกสอด (mm)</li>
+                    <li><b>R₁, R₂</b> = รัศมีของวงแหวนที่แยกตัวออกซ้ายและขวาตามลำดับ (mm)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- ตารางบันทึกผลการทดลอง -->
+    <div class="bottom-container">
+        <div class="card">
+            <div class="card-title">📊 ตารางบันทึกผลการทดลอง: การวัดรัศมีวงแหวนเพื่อคำนวณพลังงานซีมาน</div>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ครั้งที่</th>
+                            <th>ชนิดก๊าซ</th>
+                            <th>B (T)</th>
+                            <th>d (mm)</th>
+                            <th>f (mm)</th>
+                            <th>R₀ (mm)</th>
+                            <th>R₁ (mm)</th>
+                            <th>R₂ (mm)</th>
+                            <th>ผลต่างรัศมี ΔR (mm)</th>
+                            <th>พลังงานที่แยกออก ΔE (×10⁻⁴ eV)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="log-table-body">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let experimentCount = 0;
+        let isMagnetOn = false;
+
+        const gasData = {
+            Neon: { name: "Neon", wavelength: 585.2, color: "rgba(255, 90, 0, ", hex: "#ff5a00", baseR: [45, 85, 125] },
+            Mercury: { name: "Mercury", wavelength: 546.1, color: "rgba(0, 255, 140, ", hex: "#00ff8c", baseR: [40, 78, 115] },
+            Cadmium: { name: "Cadmium", wavelength: 643.8, color: "rgba(255, 0, 50, ", hex: "#ff0032", baseR: [50, 92, 135] }
+        };
+
+        const paramGas = document.getElementById('param-gas');
+        const paramB = document.getElementById('param-b');
+        const valB = document.getElementById('val-b');
+        
+        const paramD = document.getElementById('param-d');
+        const valD = document.getElementById('val-d');
+        const paramF = document.getElementById('param-f');
+        const valF = document.getElementById('val-f');
+
+        const btnMagnet = document.getElementById('btn-magnet');
+        const statusBadge = document.getElementById('status-badge');
+        
+        const lblDE = document.getElementById('lbl-de');
+        const lblR0 = document.getElementById('lbl-r0');
+        const lblR1 = document.getElementById('lbl-r1');
+        const lblR2 = document.getElementById('lbl-r2');
+        const logTableBody = document.getElementById('log-table-body');
+        
+        const canvas = document.getElementById('ringCanvas');
+        const ctx = canvas.getContext('2d');
+        const setupCanvas = document.getElementById('setupCanvas');
+        const ctxSetup = setupCanvas.getContext('2d');
+
+        function toggleMagnet() {
+            isMagnetOn = !isMagnetOn;
+            if (isMagnetOn) {
+                btnMagnet.innerText = "🧲 จ่ายสนามแม่เหล็ก: ON";
+                btnMagnet.classList.add('active');
+                paramB.disabled = false;
+                paramB.value = 0.5;
+                statusBadge.innerText = "สนามแม่เหล็ก: เปิดอยู่";
+            } else {
+                btnMagnet.innerText = "🧲 จ่ายสนาม magnetic: OFF";
+                btnMagnet.classList.remove('active');
+                paramB.disabled = true;
+                paramB.value = 0;
+                statusBadge.innerText = "สนามแม่เหล็ก: ปิดอยู่";
+            }
+            updateSystem();
+        }
+
+        function drawSetupSchematic(currentGas, B) {
+            ctxSetup.clearRect(0, 0, setupCanvas.width, setupCanvas.height);
+            ctxSetup.fillStyle = "#0c111d";
+            ctxSetup.fillRect(0, 0, setupCanvas.width, setupCanvas.height);
+
+            // 1. วาดแกนลำแสงวิ่งผ่านระบบ (Optical Axis)
+            ctxSetup.strokeStyle = "rgba(255, 255, 255, 0.15)";
+            ctxSetup.lineWidth = 1;
+            ctxSetup.setLineDash([5, 5]);
+            ctxSetup.beginPath();
+            ctxSetup.moveTo(190, 20);
+            ctxSetup.lineTo(190, 400);
+            ctxSetup.stroke();
+            ctxSetup.setLineDash([]); // reset
+
+            // 2. วาดขั้วแม่เหล็กไฟฟ้า (Electromagnet Poles)
+            ctxSetup.fillStyle = "#334155";
+            ctxSetup.fillRect(60, 50, 80, 50);  // ขั้วซ้าย
+            ctxSetup.fillRect(240, 50, 80, 50); // ขั้วขวา
+            
+            ctxSetup.fillStyle = "#cbd5e1";
+            ctxSetup.font = "bold 11px Sarabun";
+            ctxSetup.fillText("Pole N", 85, 80);
+            ctxSetup.fillText("Pole S", 265, 80);
+
+            // แสดงออร่าสนามแม่เหล็กเมื่อเปิดเครื่อง
+            if (B > 0) {
+                let gradient = ctxSetup.createLinearGradient(140, 0, 240, 0);
+                gradient.addColorStop(0, "rgba(239, 68, 68, " + (B*0.4) + ")");
+                gradient.addColorStop(1, "rgba(59, 130, 246, " + (B*0.4) + ")");
+                ctxSetup.fillStyle = gradient;
+                ctxSetup.fillRect(140, 45, 100, 60);
+            }
+
+            // 3. หลอดแก้วก๊าซเรืองแสง (Gas Discharge Tube) อยู่ตรงกลางขั้วแม่เหล็ก
+            ctxSetup.shadowBlur = B > 0 ? 15 : 5;
+            ctxSetup.shadowColor = currentGas.hex;
+            ctxSetup.fillStyle = currentGas.hex;
+            ctxSetup.beginPath();
+            ctxSetup.arc(190, 75, 12, 0, 2 * Math.PI);
+            ctxSetup.fill();
+            ctxSetup.shadowBlur = 0; // reset
+
+            ctxSetup.fillStyle = "#ffffff";
+            ctxSetup.font = "10px Sarabun";
+            ctxSetup.fillText(currentGas.name + " Tube", 160, 40);
+
+            // 4. วาดเส้นลำแสงขยายตัว (Light Ray) วิ่งจากหลอดผ่านอุปกรณ์ต่าง ๆ
+            ctxSetup.strokeStyle = currentGas.color + "0.4)";
+            ctxSetup.fillStyle = currentGas.color + "0.15)";
+            ctxSetup.beginPath();
+            ctxSetup.moveTo(190, 75);
+            ctxSetup.lineTo(150, 160);
+            ctxSetup.lineTo(230, 160);
+            ctxSetup.closePath();
+            ctxSetup.fill();
+            ctxSetup.stroke();
+
+            // ลำแสงขนานหลังผ่านเลนส์ตัวแรก
+            ctxSetup.fillRect(150, 160, 80, 80);
+            ctxSetup.beginPath();
+            ctxSetup.moveTo(150, 160); ctxSetup.lineTo(150, 240);
+            ctxSetup.moveTo(230, 160); ctxSetup.lineTo(230, 240);
+            ctxSetup.stroke();
+
+            // 5. ชิ้นส่วน: เลนส์รวมแสงชิ้นที่ 1 (Collimating Lens)
+            ctxSetup.fillStyle = "rgba(14, 165, 233, 0.3)";
+            ctxSetup.strokeStyle = "#0ea5e9";
+            ctxSetup.lineWidth = 2;
+            ctxSetup.beginPath();
+            ctxSetup.ellipse(190, 160, 40, 8, 0, 0, 2 * Math.PI);
+            ctxSetup.fill();
+            ctxSetup.stroke();
+            ctxSetup.fillStyle = "#8ae4ff";
+            ctxSetup.fillText("Lens 1 (f₁)", 240, 163);
+
+            // 6. ชิ้นส่วน: แผ่นกรองแสงสีระบุความยาวคลื่น (Interference Filter)
+            ctxSetup.fillStyle = currentGas.hex;
+            ctxSetup.fillRect(160, 200, 60, 6);
+            ctxSetup.fillStyle = "#ffffff";
+            ctxSetup.fillText("Filter (λ)", 230, 206);
+
+            // 7. ชิ้นส่วน: Fabry-Pérot Etalon (หัวใจของงานแยกวงแหวน)
+            ctxSetup.fillStyle = "rgba(241, 245, 249, 0.2)";
+            ctxSetup.strokeStyle = "#94a3b8";
+            ctxSetup.fillRect(155, 240, 70, 25);
+            ctxSetup.strokeRect(155, 240, 70, 25);
+            
+            // วาดกระจกสองแผ่นด้านในห้อง Etalon
+            ctxSetup.strokeStyle = "#fbbf24";
+            ctxSetup.lineWidth = 1.5;
+            ctxSetup.beginPath();
+            ctxSetup.moveTo(160, 245); ctxSetup.lineTo(220, 245);
+            ctxSetup.moveTo(160, 260); ctxSetup.lineTo(220, 260);
+            ctxSetup.stroke();
+            ctxSetup.fillStyle = "#fbbf24";
+            ctxSetup.fillText(`Etalon (d = ${parseFloat(paramD.value).toFixed(2)}mm)`, 235, 255);
+
+            // ลำแสงหักเหโฟกัสเข้าฉากหลังผ่านเลนส์กล้อง
+            ctxSetup.fillStyle = currentGas.color + "0.15)";
+            ctxSetup.strokeStyle = currentGas.color + "0.4)";
+            ctxSetup.beginPath();
+            ctxSetup.moveTo(150, 310);
+            ctxSetup.lineTo(190, 380);
+            ctxSetup.lineTo(230, 310);
+            ctxSetup.closePath();
+            ctxSetup.fill();
+            ctxSetup.stroke();
+
+            // 8. ชิ้นส่วน: เลนส์กล้องโฟกัสภาพตัวที่ 2 (Imaging Lens f)
+            ctxSetup.fillStyle = "rgba(14, 165, 233, 0.3)";
+            ctxSetup.strokeStyle = "#0ea5e9";
+            ctxSetup.lineWidth = 2;
+            ctxSetup.beginPath();
+            ctxSetup.ellipse(190, 310, 42, 8, 0, 0, 2 * Math.PI);
+            ctxSetup.fill();
+            ctxSetup.stroke();
+            ctxSetup.fillStyle = "#8ae4ff";
+            ctxSetup.fillText(`Imaging Lens (f = ${parseInt(paramF.value)}mm)`, 240, 314);
+
+            // 9. ฉากรับภาพปลายทาง CCD Camera
+            ctxSetup.fillStyle = "#1e293b";
+            ctxSetup.fillRect(160, 380, 60, 10);
+            ctxSetup.strokeStyle = "#64748b";
+            ctxSetup.strokeRect(160, 380, 60, 10);
+            ctxSetup.fillStyle = "#ffffff";
+            ctxSetup.fillText("CCD Sensor", 163, 405);
+        }
+
+        function updateSystem() {
+            const currentGas = gasData[paramGas.value];
+            const B = parseFloat(paramB.value);
+            const d = parseFloat(paramD.value);
+            const f = parseInt(paramF.value);
+
+            valB.innerText = B.toFixed(2) + " Tesla";
+            valD.innerText = d.toFixed(2) + " mm";
+            valF.innerText = f + " mm";
+
+            // คำนวณค่าจริงทางกายภาพตามเงื่อนไขสนามแม่เหล็ก
+            const mu_B = 5.788e-5; 
+            const deltaE = mu_B * B; 
+            
+            lblDE.innerText = (deltaE * 10000).toFixed(2) + " x 10⁻⁴ eV";
+
+            // วาดรูปจัดชุดการทดลองฝั่งซ้าย
+            drawSetupSchematic(currentGas, B);
+
+            // วาดวงแหวนทางทัศนศาสตร์ฝั่งขวา
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+
+            const scaleMultiplier = f / 300;
+            const pxToMm = 75; 
+
+            const baseR2 = currentGas.baseR[1] * scaleMultiplier;
+            lblR0.innerText = (baseR2 / pxToMm).toFixed(2) + " mm";
+
+            const splitAmount = (B * 11 * scaleMultiplier) * (4.0 / d); 
+
+            if (B > 0) {
+                lblR1.innerText = ((baseR2 - splitAmount) / pxToMm).toFixed(2) + " mm";
+                lblR2.innerText = ((baseR2 + splitAmount) / pxToMm).toFixed(2) + " mm";
+            } else {
+                lblR1.innerText = "0.00 mm";
+                lblR2.innerText = "0.00 mm";
+            }
+
+            // ลูปวาดวงแหวนแทรกสอดจำลอง
+            currentGas.baseR.forEach((baseRadius) => {
+                const adjustedRadius = baseRadius * scaleMultiplier;
+                if (B === 0) {
+                    drawSharpRing(centerX, centerY, adjustedRadius, currentGas.color, 1.0);
+                } else {
+                    drawSharpRing(centerX, centerY, adjustedRadius - splitAmount, currentGas.color, 0.5);
+                    drawSharpRing(centerX, centerY, adjustedRadius + splitAmount, currentGas.color, 0.5);
+                }
+            });
+        }
+
+        function drawSharpRing(x, y, r, colorPattern, alpha) {
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, 2 * Math.PI);
+            ctx.strokeStyle = colorPattern + alpha + ")";
+            ctx.lineWidth = 3.5;
+            ctx.shadowBlur = 6;
+            ctx.shadowColor = colorPattern + "0.8)";
+            ctx.stroke();
+            
+            ctx.shadowBlur = 0;
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, 2 * Math.PI);
+            ctx.strokeStyle = colorPattern + (alpha * 0.25) + ")";
+            ctx.lineWidth = 7;
+            ctx.stroke();
+        }
+
+        function logData() {
+            experimentCount++;
+            const currentGas = gasData[paramGas.value];
+            const B = parseFloat(paramB.value);
+            const d = parseFloat(paramD.value);
+            const f = parseInt(paramF.value);
+            
+            const scaleMultiplier = f / 300;
+            const pxToMm = 75;
+            const baseR2 = currentGas.baseR[1] * scaleMultiplier;
+            const splitAmount = (B * 11 * scaleMultiplier) * (4.0 / d);
+
+            const r0 = baseR2 / pxToMm;
+            const r1 = B > 0 ? (baseR2 - splitAmount) / pxToMm : r0;
+            const r2 = B > 0 ? (baseR2 + splitAmount) / pxToMm : r0;
+            const deltaR = r2 - r1;
+
+            const mu_B = 5.788e-5;
+            const deltaE_e4 = (mu_B * B) * 10000; 
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><b>${experimentCount}</b></td>
+                <td><span style="color:${currentGas.hex}; font-weight:bold;">${currentGas.name}</span></td>
+                <td>${B.toFixed(2)} T</td>
+                <td>${d.toFixed(2)} mm</td>
+                <td>${f} mm</td>
+                <td>${r0.toFixed(2)} mm</td>
+                <td>${B > 0 ? r1.toFixed(2) : "-"} mm</td>
+                <td>${B > 0 ? r2.toFixed(2) : "-"} mm</td>
+                <td>${deltaR.toFixed(2)} mm</td>
+                <td style="font-weight: bold; color: var(--danger);">${deltaE_e4.toFixed(2)}</td>
+            `;
+            logTableBody.appendChild(row);
+        }
+
+        function resetLab() {
+            isMagnetOn = false;
+            btnMagnet.innerText = "🧲 จ่ายสนามแม่เหล็ก: OFF";
+            btnMagnet.classList.remove('active');
+            paramB.disabled = true;
+            paramB.value = 0;
+            paramD.value = 4.0;
+            paramF.value = 300;
+            paramGas.value = "Neon";
+            statusBadge.innerText = "สนามแม่เหล็ก: ปิดอยู่";
+            logTableBody.innerHTML = "";
+            experimentCount = 0;
+            updateSystem();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            updateSystem();
+        });
+    </script>
+</body>
+</html>

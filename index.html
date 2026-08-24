@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physics Virtual Lab</title>
+    <!-- นำเข้า Google Fonts & Font Awesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-dark-core: #0a0f1d;
+            --bg-dark-card: rgba(20, 27, 47, 0.7);
+            --border-glow: rgba(255, 255, 255, 0.08);
+            
+            --text-pure: #ffffff;
+            --text-glow: #e2e8f0;
+            --text-sub: #718096;
+            
+            --glow-mechanics: #00f2fe;
+            --glow-electricity: #ffd000;
+            --glow-quantum: #ec008c;
+            /* เพิ่มสีเรืองแสงสำหรับส่วนที่ 4 (คู่มือการทดลอง) */
+            --glow-manual: #00ff87;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Kanit', sans-serif;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        body {
+            background-color: var(--bg-dark-core);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 242, 254, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(236, 0, 140, 0.05) 0%, transparent 40%);
+            background-attachment: fixed;
+            color: var(--text-glow);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        header {
+            text-align: center;
+            padding: 5rem 2rem 3rem 2rem;
+        }
+
+        header h1 {
+            font-family: 'Chakra Petch', 'Kanit', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 30%, #ec008c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.8rem;
+            text-transform: uppercase;
+            filter: drop-shadow(0 2px 10px rgba(0,242,254,0.15));
+        }
+
+        header p {
+            color: var(--text-sub);
+            font-size: 1.2rem;
+            font-weight: 300;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 0 2rem 5rem 2rem;
+        }
+
+        /* ------------------ หมวดหมู่หลักหน้าแรก ------------------ */
+        .grid-menu {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 2rem;
+            margin-top: 1.5rem;
+        }
+
+        .lab-card {
+            background: var(--bg-dark-card);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-glow);
+            border-radius: 28px;
+            padding: 3.5rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .lab-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 28px;
+            padding: 2px;
+            background: linear-gradient(to bottom, transparent, transparent);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        .card-mechanics:hover { transform: translateY(-12px); box-shadow: 0 25px 50px rgba(0, 242, 254, 0.15); background: rgba(0, 242, 254, 0.03); }
+        .card-mechanics:hover::after { background: linear-gradient(135deg, var(--glow-mechanics), transparent); }
+
+        .card-electricity:hover { transform: translateY(-12px); box-shadow: 0 25px 50px rgba(255, 208, 0, 0.12); background: rgba(255, 208, 0, 0.02); }
+        .card-electricity:hover::after { background: linear-gradient(135deg, var(--glow-electricity), transparent); }
+
+        .card-quantum:hover { transform: translateY(-12px); box-shadow: 0 25px 50px rgba(236, 0, 140, 0.15); background: rgba(236, 0, 140, 0.03); }
+        .card-quantum:hover::after { background: linear-gradient(135deg, var(--glow-quantum), transparent); }
+
+        /* สไตล์ปุ่มโฮเวอร์ของส่วนที่ 4 */
+        .card-manual:hover { transform: translateY(-12px); box-shadow: 0 25px 50px rgba(0, 255, 135, 0.15); background: rgba(0, 255, 135, 0.03); }
+        .card-manual:hover::after { background: linear-gradient(135deg, var(--glow-manual), transparent); }
+
+        .icon-wrapper {
+            width: 100px;
+            height: 100px;
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            margin-bottom: 2rem;
+        }
+
+        .card-mechanics .icon-wrapper { color: var(--glow-mechanics); background: rgba(0, 242, 254, 0.05); }
+        .card-electricity .icon-wrapper { color: var(--glow-electricity); background: rgba(255, 208, 0, 0.05); }
+        .card-quantum .icon-wrapper { color: var(--glow-quantum); background: rgba(236, 0, 140, 0.05); }
+        .card-manual .icon-wrapper { color: var(--glow-manual); background: rgba(0, 255, 135, 0.05); }
+
+        .lab-card h2 { font-size: 1.6rem; margin-bottom: 1rem; font-weight: 600; color: var(--text-pure); }
+        .lab-card p { color: var(--text-sub); font-size: 0.95rem; line-height: 1.6; }
+
+        /* ------------------ หน้าจอย่อยเมื่อกดเข้ามา ------------------ */
+        .lab-screen {
+            display: none;
+            opacity: 0;
+            transform: scale(0.98) translateY(20px);
+            background: var(--bg-dark-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 32px;
+            padding: 2.5rem;
+            border: 1px solid var(--border-glow);
+            margin-top: 1rem;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .lab-screen.active {
+            display: block;
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+
+        .lab-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding-bottom: 1.8rem;
+            margin-bottom: 2rem;
+        }
+
+        .lab-header h2 {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--text-pure);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-back {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-glow);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 0.75rem 1.5rem;
+            border-radius: 16px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-back:hover { background: rgba(255, 255, 255, 0.1); transform: translateX(-4px); }
+
+        /* ------------------ รายชื่อแลปย่อยที่จะถูกสร้างขึ้นมา ------------------ */
+        .sub-lab-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .sub-lab-card {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: flex-start;
+            position: relative;
+        }
+
+        .sub-lab-card h4 {
+            color: var(--text-pure);
+            font-size: 1.15rem;
+            font-weight: 500;
+            line-height: 1.5;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-enter-lab {
+            text-decoration: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* แยกสไตล์ตามประเภทวิชาเพื่อให้สีแมตช์กัน */
+        .mechanics-theme .sub-lab-card { border-left: 4px solid var(--glow-mechanics); }
+        .mechanics-theme .btn-enter-lab { background: var(--glow-mechanics); color: #000; }
+        
+        .electricity-theme .sub-lab-card { border-left: 4px solid var(--glow-electricity); }
+        .electricity-theme .btn-enter-lab { background: var(--glow-electricity); color: #000; }
+        
+        .quantum-theme .sub-lab-card { border-left: 4px solid var(--glow-quantum); }
+        .quantum-theme .btn-enter-lab { background: var(--glow-quantum); color: #fff; }
+
+        /* สไตล์สำหรับปุ่มและธีมของคู่มือการทดลอง (PDF) */
+        .manual-theme .sub-lab-card { border-left: 4px solid var(--glow-manual); }
+        .manual-theme .btn-enter-lab { background: var(--glow-manual); color: #000; }
+
+        .btn-enter-lab:hover { opacity: 0.9; transform: translateY(-2px); }
+
+        .no-labs {
+            color: var(--text-sub);
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 3rem;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <header id="main-header">
+        <h1>Physics Virtual Lab</h1>
+        <p>การทดลองฟิสิกส์เสมือนจริง โดย พงษ์แก้ว อุดมสมุทรหิรัญ</p>
+    </header>
+
+    <div class="container">
+        
+        <!-- หน้าแรก: กล่องเลือกหมวดหมู่หลัก เพิ่มเป็น 4 ช่องใหญ่ -->
+        <div id="menu-view" class="grid-menu">
+            
+            <div class="lab-card card-mechanics" onclick="openLab('mechanics')">
+                <div class="icon-wrapper"><i class="fa-solid fa-shapes"></i></div>
+                <h2>การทดลองทางกลศาสตร์</h2>
+                <p>เรียนรู้เรื่องมวล, แรง, ความเร่ง, ลูกตุ้มเพนดูลัม และการเคลื่อนที่แบบต่างๆ</p>
+            </div>
+
+            <div class="lab-card card-electricity" onclick="openLab('electricity')">
+                <div class="icon-wrapper"><i class="fa-solid fa-bolt-lightning"></i></div>
+                <h2>ไฟฟ้า & แม่เหล็ก</h2>
+                <p>วิเคราะห์แผนผังวงจรไฟฟ้ากระแสตรง กฎของโอห์ม และทิศทางของสนามแม่เหล็กไฟฟ้า</p>
+            </div>
+
+            <div class="lab-card card-quantum" onclick="openLab('quantum')">
+                <div class="icon-wrapper"><i class="fa-solid fa-atom"></i></div>
+                <h2>ฟิสิกส์ควอนตัม</h2>
+                <p>ไขความลับของสสารในระดับอะตอม ระดับพลังงาน และพฤติกรรมทวิภาวะคลื่น-อนุภาค</p>
+            </div>
+
+            <!-- ส่วนที่ 4 ที่เพิ่มเข้ามาใหม่: คู่มือการทดลอง (ลิงก์ไฟล์ PDF) -->
+            <div class="lab-card card-manual" onclick="openLab('manual')">
+                <div class="icon-wrapper"><i class="fa-solid fa-file-pdf"></i></div>
+                <h2>คู่มือการทดลอง</h2>
+                <p>ดาวน์โหลดเอกสารคู่มือ แนะนำขั้นตอนการทดลอง และบันทึกผลการทดลองในรูปแบบ PDF</p>
+            </div>
+
+        </div>
+
+        <!-- หน้าจอย่อยที่จะใช้แสดงผลการทดลองต่างๆ (จัดการด้วย JavaScript) -->
+        <div id="lab-screen-template" class="lab-screen">
+            <div class="lab-header">
+                <h2 id="screen-title"><i class="fa-solid fa-atom"></i> ห้องทดลอง</h2>
+                <button class="btn-back" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> ย้อนกลับ</button>
+            </div>
+            
+            <!-- กล่องที่จะถูกนำการทดลองย่อยมาใส่ -->
+            <div id="sub-labs-container" class="sub-lab-grid">
+                <!-- รายชื่อแลปย่อยจาก Array จะโผล่ตรงนี้ -->
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ข้อมูลการทดลองทั้งหมด
+        // หมวดหมู่ที่มีให้เลือก: 'mechanics', 'electricity', 'quantum' และ 'manual' (คู่มือ PDF)
+        const labs = [
+            // 🔹 หมวดหมู่กลศาสตร์ (mechanics)
+            { title: "Lab : การวัดค่า k สปริง", url: "sprin-1.html", category: "mechanics" },
+            { title: "Lab: การวัดค่าคาบ สปริง", url: "sprin-2.html", category: "mechanics" },
+            { title: "Lab : เวกเตอร์", url: "vector-1.html", category: "mechanics" },
+            { title: "Lab : การ cross เวกเตอร์", url: "cross_product.html", category: "mechanics" },
+            { title: "Lab : การชั่งน้ำหนักในลิฟต์", url: "ele-1.html", category: "mechanics" },
+            { title: "Lab : คาน ชนิดที่ 1  ", url: "type-1.html", category: "mechanics" },
+            { title: "Lab : คาน ชนิดที่ 2 ", url: "type-2.html", category: "mechanics" },
+            { title: "Lab : คาน ชนิดที่ 3 ", url: "type-3.html", category: "mechanics" },
+            { title: "Lab : การสั่นพล้อง  ", url: "sou-6.html", category: "mechanics" },
+            { title: "Lab : ปรากฏการณ์ capillary  ", url: "ca-3.html", category: "mechanics" },
+            { title: "Lab : ความหนืด", url: "viscosity-1.html", category: "mechanics" },
+            
+            // 🔹 หมวดหมู่ไฟฟ้า & แม่เหล็ก (electricity)
+            { title: "Lab : ความต้านทานของร่างกาย", url: "body-2.html", category: "electricity" },
+            { title: "Lab : เครื่องชั่งเเรงเเม่เหล็ก", url: "mag-bal-9.html", category: "electricity" },
+            { title: "Lab : เลนส์นูน", url: "len-3.html", category: "electricity" },
+            { title: "Lab : เลนส์เว้า", url: "len-v-1.html", category: "electricity" },
+            { title: "Lab : กล้องดูดาว", url: "sta-6.html", category: "electricity" },
+            { title: "Lab : วงเเหวนของนิวตัน", url: "ne-r-6.html", category: "electricity" },
+            { title: "Lab : การเเทรกสอด-เส้นผม", url: "การเเสง-2.html", category: "electricity" },
+            { title: "Lab : การถ่ายโอนความร้อน", url: "ถ่ายโอน-2-1.html", category: "electricity" },
+            
+            // 🔹 หมวดหมู่ฟิสิกส์ควอนตัม (quantum)
+            { title: "Lab : ปรากฏการณ์โฟโตอิเล็กทริก", url: "phot-2.html", category: "quantum" },
+            { title: "Lab : ปรากฏการณ์คอมตัน", url: "com-4-1.html", category: "quantum" },
+            { title: "Lab : ปรากฏการณ์ซีมานน์", url: "zee-4.html", category: "quantum" },
+            { title: "Lab : หยดน้ำมันของมิลลิเเกน", url: "mili-8.html", category: "quantum" },
+ { title: "Lab : สเปกโตมิเตอร์", url: "sp-2.html", category: "quantum" },
+            { title: "Lab : กล้อง TEM", url: "tem-1.html", category: "quantum" },
+            { title: "Lab : Fabry-Perot Interferometer", url: "fa-4.html", category: "quantum" },
+            { title: "Lab : วัตถุดำ", url: "bb-1.html", category: "quantum" },
+
+            // 🟢 หมวดหมู่ที่ 4: คู่มือการทดลอง (เพิ่มใส่ไฟล์ PDF ตรงนี้ได้เลยครับ)
+            { title: "คู่มือ : การเปรียบเทียบประสิทธิภาพความร้อน", url: "heat.pdf", category: "manual" },
+            { title: "คู่มือ : ปรากฏการณ์ capillary", url: "capil.pdf", category: "manual" },
+  { title: "คู่มือ : การขยายตัวด้วยความร้อน", url: "heat-expan.pdf", category: "manual" },
+ { title: "คู่มือ : ct scan ", url: "ct.pdf", category: "manual" },
+{ title: "คู่มือ : สเปกโตมิเตอร์ ", url: "spec.pdf", category: "manual" },
+ { title: "คู่มือ : การทดลองสปริง ", url: "sprin.pdf", category: "manual" },
+            { title: "คู่มือ : ความต้านทานของร่างกาย", url: "body.pdf", category: "manual" }
+        ];
+
+        // ฟังก์ชันเมื่อกดเลือกหมวดหมู่หลัก
+        function openLab(category) {
+            // 1. ซ่อนหน้าแรก และเปลี่ยนระยะ Header
+            document.getElementById('menu-view').style.display = 'none';
+            document.getElementById('main-header').style.padding = '2.5rem 2rem 1rem 2rem';
+            document.getElementById('main-header').querySelector('p').style.opacity = '0';
+
+            // 2. ตั้งชื่อเรื่องและไอคอนให้เหมาะสมตามหมวดหมู่
+            const screenTitle = document.getElementById('screen-title');
+            const screen = document.getElementById('lab-screen-template');
+            
+            // ล้าง Theme เก่าออกให้หมด
+            screen.className = 'lab-screen active'; 
+
+            if (category === 'mechanics') {
+                screenTitle.innerHTML = `<i class="fa-solid fa-shapes" style="color: var(--glow-mechanics);"></i> ห้องทดลองกลศาสตร์`;
+                screen.classList.add('mechanics-theme');
+            } else if (category === 'electricity') {
+                screenTitle.innerHTML = `<i class="fa-solid fa-bolt-lightning" style="color: var(--glow-electricity);"></i> ห้องทดลองไฟฟ้า & แม่เหล็ก`;
+                screen.classList.add('electricity-theme');
+            } else if (category === 'quantum') {
+                screenTitle.innerHTML = `<i class="fa-solid fa-atom" style="color: var(--glow-quantum);"></i> ห้องทดลองฟิสิกส์ควอนตัม`;
+                screen.classList.add('quantum-theme');
+            } else if (category === 'manual') {
+                // จัดการหน้าย่อยของ คู่มือการทดลอง
+                screenTitle.innerHTML = `<i class="fa-solid fa-file-pdf" style="color: var(--glow-manual);"></i> คลังคู่มือการทดลอง (PDF)`;
+                screen.classList.add('manual-theme');
+            }
+
+            // 3. กรองข้อมูลแลปที่มี category ตรงกับที่กดเลือก
+            const container = document.getElementById('sub-labs-container');
+            container.innerHTML = ''; // ล้างข้อมูลเก่าก่อนสร้างใหม่
+
+            const filteredLabs = labs.filter(lab => lab.category === category);
+
+            if (filteredLabs.length === 0) {
+                container.innerHTML = `<div class="no-labs">ยังไม่มีคู่มือหรือเอกสารในหมวดหมู่นี้...</div>`;
+            } else {
+                // วนลูปสร้างกล่องแลปย่อยตามตั้งค่าไว้ใน Array
+                filteredLabs.forEach(lab => {
+                    const card = document.createElement('div');
+                    card.className = 'sub-lab-card';
+                    
+                    // หากเป็นหมวดหมู่คู่มือ (manual) ข้อความปุ่มจะเปลี่ยนให้เข้ากับเอกสาร PDF
+                    const buttonText = (category === 'manual') ? 'เปิดอ่าน/ดาวน์โหลด PDF <i class="fa-solid fa-download"></i>' : 'เข้าสู่ห้องทดลอง <i class="fa-solid fa-arrow-right"></i>';
+                    
+                    card.innerHTML = `
+                        <h4>${lab.title}</h4>
+                        <a href="${lab.url}" class="btn-enter-lab" target="_blank">
+                            ${buttonText}
+                        </a>
+                    `;
+                    container.appendChild(card);
+                });
+            }
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ฟังก์ชันกลับหน้าหลัก
+        function goBack() {
+            document.getElementById('lab-screen-template').classList.remove('active');
+            document.getElementById('menu-view').style.display = 'grid';
+            
+            document.getElementById('main-header').style.padding = '5rem 2rem 3rem 2rem';
+            document.getElementById('main-header').querySelector('p').style.opacity = '1';
+        }
+    </script>
+</body>
+</html>
