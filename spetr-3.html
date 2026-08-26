@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Lab: Advanced Diffraction Grating Spectrum</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --primary-color: #38bdf8;
+            --accent-color: #22d3ee;
+            --text-color: #f1f5f9;
+            --border-color: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Sarabun', 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 1350px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 1024px) {
+            .container { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .control-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #0f172a;
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .control-item label {
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+
+        select, input[type="range"], input[type="number"] {
+            background: #1e293b;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 6px 10px;
+            border-radius: 6px;
+            outline: none;
+        }
+
+        select:focus, input:focus {
+            border-color: var(--primary-color);
+        }
+
+        /* Screen Simulation Area */
+        .screen-box {
+            background: #000;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        canvas {
+            width: 100%;
+            height: 220px;
+            display: block;
+            background: #000;
+            cursor: crosshair;
+        }
+
+        /* Clean Minimal Table */
+        .table-container {
+            overflow-x: auto;
+            margin-top: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        th, td {
+            padding: 8px 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        th {
+            background: #0f172a;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .btn {
+            background: #0284c7;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn:hover {
+            background: #0369a1;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+        }
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .formula-box {
+            background: #0f172a;
+            border-left: 4px solid var(--primary-color);
+            padding: 12px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: #cbd5e1;
+            margin-top: 10px;
+        }
+        
+        .selection-status {
+            background: #0f172a;
+            border: 1px dashed var(--accent-color);
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div>
+        <div class="card">
+            <div class="card-title">🔬 เครื่องมือการทดลองเกรตติ้ง (Diffraction Grating Lab)</div>
+            
+            <div class="control-group">
+                <div class="control-item">
+                    <label for="lightSource"><strong>💡 แหล่งกำเนิดแสง (Light Source):</strong></label>
+                    <select id="lightSource" onchange="resetSelection(); updateSimulation();">
+                        <option value="laser_red">เลเซอร์สีแดง (Monochromatic Red Laser - 650 nm)</option>
+                        <option value="laser_green">เลเซอร์สีเขียว (Monochromatic Green Laser - 532 nm)</option>
+                        <option value="sodium">หลอดไอโซเดียม (Sodium Lamp - D-lines 589 nm)</option>
+                        <option value="methane">เปลวไฟแก๊สมีเทน (Methane Flame Spectrum)</option>
+                        <option value="incandescent">หลอดไฟไส้ (White Light - Continuous Spectrum)</option>
+                        <option value="hydrogen">แก๊สไฮโดรเจน (Hydrogen Emission Tube - Line Spectrum)</option>
+                        <option value="mercury">ไอปรอท (Mercury Vapor Lamp - Line Spectrum)</option>
+                    </select>
+                </div>
+
+                <div class="control-item">
+                    <label for="gratingN"><strong>เลือกลำจำนวนช่องเกรตติ้ง (N):</strong></label>
+                    <select id="gratingN" onchange="updateSimulation()">
+                        <option value="100">100 ช่อง/มม. (d = 10,000 nm)</option>
+                        <option value="300" selected>300 ช่อง/มม. (d = 3,333.3 nm)</option>
+                        <option value="600">600 ช่อง/มม. (d = 1,666.7 nm)</option>
+                        <option value="1000">1,000 ช่อง/มม. (d = 1,000 nm)</option>
+                    </select>
+                </div>
+
+                <div class="control-item">
+                    <label for="distanceL"><strong>ระยะห่างเกรตติ้งถึงฉาก L (เมตร):</strong> <span id="valL" class="text-sky-400 font-bold">1.00 m</span></label>
+                    <input type="range" id="distanceL" min="0.50" max="2.00" step="0.05" value="1.00" oninput="updateSimulation()">
+                </div>
+            </div>
+
+            <div class="screen-box">
+                <div style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 5px;">🎯 คลิกเลือกเส้นสเปกตรัมบนฉากรับแสงเพื่อบันทึกผลค่าเฉพาะตำแหน่งนั้น:</div>
+                <canvas id="spectrumCanvas" width="700" height="220"></canvas>
+                
+                <div class="selection-status">
+                    <div>
+                        📍 ตำแหน่งที่เลือกปัจจุบัน: <span id="selectedLabel" style="color: var(--accent-color); font-weight: bold;">ยังไม่ได้เลือก (คลิกที่เส้นบนฉาก)</span>
+                    </div>
+                    <button class="btn" style="background: #10b981;" onclick="addRecord()">+ บันทึกจุดที่เลือกนี้ลงตาราง</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">📐 การคำนวณและวิเคราะห์ผลสด (Physics Live Data)</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.9rem;">
+                <div style="background:#0f172a; padding:10px; border-radius:6px;">
+                    <span style="color:#94a3b8;">ระยะช่องเกรตติ้ง (d):</span><br>
+                    <strong id="dispD" style="color:#38bdf8;">- µm</strong>
+                </div>
+                <div style="background:#0f172a; padding:10px; border-radius:6px;">
+                    <span style="color:#94a3b8;">ระยะห่างถึงฉาก (L):</span><br>
+                    <strong id="dispL" style="color:#38bdf8;">- m</strong>
+                </div>
+            </div>
+            
+            <div class="formula-box">
+                <strong>สูตรการคำนวณฟิสิกส์:</strong><br>
+                1. d = 1 / (N x 10^3) เมตร<br>
+                2. d sin(θ) = m x λ  &rArr;  θ = arcsin( (m x λ) / d )<br>
+                3. ระยะตำแหน่งบนฉาก y_m = L x tan(θ)
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <div class="card">
+            <div class="card-title" style="justify-content: space-between;">
+                <span>📊 ตารางบันทึกผลการทดลอง</span>
+                <div>
+                    <button class="btn btn-danger" onclick="clearTable()">ล้างตาราง</button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>แหล่งแสง</th>
+                            <th>เส้น/สีที่เลือก</th>
+                            <th>N (ช่อง/มม.)</th>
+                            <th>L (m)</th>
+                            <th>y บนฉาก (cm)</th>
+                            <th>มุม θ (องศา)</th>
+                            <th>ความยาวคลื่น λ (nm)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">💡 คำแนะนำการทดลองสำหรับนักเรียน</div>
+            <ul style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.7; padding-left: 20px;">
+                <li>เลื่อนเมาส์ผ่านฉากรับแสงเพื่อดูระยะพิกัดเซนติเมตรบนไม้บรรทัด</li>
+                <li><strong>คลิกซ้าย</strong> ตรงตำแหน่งเส้นสีสเปกตรัมที่ต้องการศึกษา ระบบจะเล็งตำแหน่งนั้นไว้ให้</li>
+                <li>กดปุ่ม <strong>"บันทึกจุดที่เลือกนี้ลงตาราง"</strong> เพื่อคำนวณค่าทางฟิสิกส์และบันทึกผลลงตารางทันทีอย่างแม่นยำ</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('spectrumCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    // ข้อมูลแหล่งกำเนิดแสงตามหลักฟิสิกส์จริง (Wavelengths in nm)
+    const sources = {
+        laser_red: { name: "เลเซอร์สีแดง", type: "mono", lines: [{ lambda: 650, color: "#ff0000", label: "เลเซอร์แดง (650nm)" }] },
+        laser_green: { name: "เลเซอร์สีเขียว", type: "mono", lines: [{ lambda: 532, color: "#00ff44", label: "เลเซอร์เขียว (532nm)" }] },
+        sodium: { 
+            name: "หลอดไอโซเดียม (Na)", 
+            type: "line", 
+            lines: [
+                { lambda: 589.0, color: "#ffcc00", label: "Na D-line 1 (เหลือง 589.0nm)" },
+                { lambda: 589.6, color: "#ffa500", label: "Na D-line 2 (เหลือง 589.6nm)" }
+            ] 
+        },
+        methane: { 
+            name: "เปลวไฟแก๊สมีเทน (CH₄)", 
+            type: "line", 
+            lines: [
+                { lambda: 431.4, color: "#7b00ff", label: "CH Band (ม่วง 431.4nm)" },
+                { lambda: 473.7, color: "#00d4ff", label: "C₂ Swan Band (ฟ้า 473.7nm)" },
+                { lambda: 516.5, color: "#00ff66", label: "C₂ Swan Band (เขียว 516.5nm)" },
+                { lambda: 563.5, color: "#ccff00", label: "C₂ Swan Band (เขียวเหลือง 563.5nm)" }
+            ] 
+        },
+        incandescent: { name: "หลอดไฟไส้", type: "continuous" },
+        hydrogen: { 
+            name: "แก๊สไฮโดรเจน (H)", 
+            type: "line", 
+            lines: [
+                { lambda: 656.3, color: "#ff2200", label: "H-alpha (สีแดง)" },
+                { lambda: 486.1, color: "#00ffff", label: "H-beta (สีฟ้าแกมเขียว)" },
+                { lambda: 434.0, color: "#4b0082", label: "H-gamma (สีน้ำเงิน)" },
+                { lambda: 410.2, color: "#8b00ff", label: "H-delta (สีม่วง)" }
+            ] 
+        },
+        mercury: { 
+            name: "ไอปรอท (Hg)", 
+            type: "line", 
+            lines: [
+                { lambda: 579.0, color: "#ffff00", label: "Hg-เหลือง" },
+                { lambda: 546.1, color: "#00ff00", label: "Hg-เขียว" },
+                { lambda: 435.8, color: "#4b0082", label: "Hg-น้ำเงินม่วง" },
+                { lambda: 404.7, color: "#8b00ff", label: "Hg-ม่วง" }
+            ] 
+        }
+    };
+
+    let recordCount = 0;
+    const scalePxPerCm = 4.0; // 1 cm = 4 px
+    let mouseX = -1;
+    let selectedX = -1;      
+    let selectedYCm = null;   
+    let selectedInfo = null;  
+
+    // ฟังก์ชันแปลงความยาวคลื่น (nm) เป็นสี RGB สำหรับวาดรูปสเปกตรัมแบบต่อเนื่อง
+    function wavelengthToColor(wavelength) {
+        let r, g, b;
+        if (wavelength >= 380 && wavelength < 440) {
+            r = -(wavelength - 440) / (440 - 380); g = 0; b = 1;
+        } else if (wavelength >= 440 && wavelength < 490) {
+            r = 0; g = (wavelength - 440) / (490 - 440); b = 1;
+        } else if (wavelength >= 490 && wavelength < 510) {
+            r = 0; g = 1; b = -(wavelength - 510) / (510 - 490);
+        } else if (wavelength >= 510 && wavelength < 580) {
+            r = (wavelength - 510) / (580 - 510); g = 1; b = 0;
+        } else if (wavelength >= 580 && wavelength < 645) {
+            r = 1; g = -(wavelength - 645) / (645 - 580); b = 0;
+        } else if (wavelength >= 645 && wavelength <= 750) {
+            r = 1; g = 0; b = 0;
+        } else {
+            r = 0; g = 0; b = 0;
+        }
+        return `rgb(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)})`;
+    }
+
+    function resetSelection() {
+        selectedX = -1;
+        selectedYCm = null;
+        selectedInfo = null;
+        document.getElementById('selectedLabel').innerText = "ยังไม่ได้เลือก (คลิกที่เส้นบนฉาก)";
+    }
+
+    function updateSimulation() {
+        const srcKey = document.getElementById('lightSource').value;
+        const N = parseFloat(document.getElementById('gratingN').value);
+        const L = parseFloat(document.getElementById('distanceL').value);
+        
+        document.getElementById('valL').innerText = L.toFixed(2) + " m";
+        
+        const d_m = (1 / (N * 1000));
+        const d_um = d_m * 1e6;
+
+        document.getElementById('dispD').innerText = d_um.toFixed(3) + " µm";
+        document.getElementById('dispL').innerText = L.toFixed(2) + " m";
+
+        drawScreen(srcKey, N, d_m, L);
+    }
+
+    function drawScreen(srcKey, N, d_m, L) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        const centerX = canvas.width / 2;
+        const centerY = 80;
+        const screenHeight = 70;
+
+        ctx.fillStyle = "#050505";
+        ctx.fillRect(0, centerY - screenHeight/2, canvas.width, screenHeight);
+
+        const srcData = sources[srcKey];
+
+        // 1. วาด แถบสว่างกลาง (Central Maximum m = 0)
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(centerX - 2, centerY - screenHeight/2, 4, screenHeight);
+
+        let calculatedLines = [];
+
+        // 2. วาดสเปกตรัมตามหลักฟิสิกส์ (m = -2, -1, 1, 2)
+        for (let m of [-2, -1, 1, 2]) {
+            if (srcData.type === "continuous") {
+                for (let wl = 380; wl <= 700; wl += 2) {
+                    let lambda_m = wl * 1e-9;
+                    let sinTheta = (m * lambda_m) / d_m;
+                    if (Math.abs(sinTheta) <= 1.0) {
+                        let theta = Math.asin(sinTheta);
+                        let y_m = L * Math.tan(theta);
+                        let y_cm = y_m * 100;
+                        let x = centerX + (y_cm * scalePxPerCm);
+
+                        if (x >= 0 && x <= canvas.width) {
+                            ctx.fillStyle = wavelengthToColor(wl);
+                            ctx.fillRect(x, centerY - screenHeight/2, 2, screenHeight);
+                            calculatedLines.push({ x: x, yCm: y_cm, lambda: wl, label: `แสงสีต่อเนื่อง (${wl} nm)` });
+                        }
+                    }
+                }
+            } else {
+                srcData.lines.forEach(line => {
+                    let lambda_m = line.lambda * 1e-9;
+                    let sinTheta = (m * lambda_m) / d_m;
+                    if (Math.abs(sinTheta) <= 1.0) {
+                        let theta = Math.asin(sinTheta);
+                        let y_m = L * Math.tan(theta);
+                        let y_cm = y_m * 100;
+                        let x = centerX + (y_cm * scalePxPerCm);
+
+                        if (x >= 0 && x <= canvas.width) {
+                            ctx.fillStyle = line.color;
+                            ctx.fillRect(x - 1, centerY - screenHeight/2, 3, screenHeight);
+                            
+                            ctx.fillStyle = line.color;
+                            ctx.globalAlpha = 0.3;
+                            ctx.fillRect(x - 3, centerY - screenHeight/2, 7, screenHeight);
+                            ctx.globalAlpha = 1.0;
+
+                            calculatedLines.push({ x: x, yCm: y_cm, lambda: line.lambda, label: line.label });
+                        }
+                    }
+                });
+            }
+        }
+
+        // 3. วาดไม้บรรทัดสเกล cm ด้านล่างฉาก
+        const scaleY = 165;
+        ctx.strokeStyle = "#94a3b8";
+        ctx.lineWidth = 1;
+        ctx.fillStyle = "#cbd5e1";
+        ctx.font = "10px Sarabun, sans-serif";
+        ctx.textAlign = "center";
+
+        ctx.beginPath();
+        ctx.moveTo(10, scaleY);
+        ctx.lineTo(canvas.width - 10, scaleY);
+        ctx.stroke();
+
+        const maxCm = (canvas.width / 2) / scalePxPerCm;
+        for (let cm = -Math.floor(maxCm); cm <= Math.floor(maxCm); cm += 5) {
+            let x = centerX + (cm * scalePxPerCm);
+            if (x >= 10 && x <= canvas.width - 10) {
+                ctx.beginPath();
+                ctx.moveTo(x, scaleY);
+                if (cm % 10 === 0) {
+                    ctx.lineTo(x, scaleY + 10);
+                    ctx.fillText(`${Math.abs(cm)} cm`, x, scaleY + 22);
+                } else {
+                    ctx.lineTo(x, scaleY + 6);
+                }
+                ctx.stroke();
+            }
+        }
+
+        ctx.fillStyle = "#38bdf8";
+        ctx.fillText("m = 0 (ศูนย์กลาง)", centerX, scaleY - 95);
+
+        // 4. วาดเส้นบอกตำแหน่งตัวเลือกชี้เป้า (Selected Guideline)
+        if (selectedX !== -1) {
+            ctx.strokeStyle = "#22d3ee";
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            ctx.moveTo(selectedX, centerY - screenHeight/2 - 10);
+            ctx.lineTo(selectedX, scaleY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            ctx.fillStyle = "#22d3ee";
+            ctx.font = "bold 11px Sarabun, sans-serif";
+            ctx.fillText("📌 ล็อกตำแหน่งจุดนี้", selectedX, centerY - screenHeight/2 - 15);
+        }
+
+        // 5. วาดเส้นไกด์ไลน์เมาส์ชี้สด (Hover Guideline)
+        if (mouseX >= 0 && mouseX <= canvas.width) {
+            ctx.strokeStyle = "rgba(255,255,255,0.4)";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(mouseX, centerY - screenHeight/2);
+            ctx.lineTo(mouseX, scaleY);
+            ctx.stroke();
+
+            let hoverYCm = (mouseX - centerX) / scalePxPerCm;
+            ctx.fillStyle = "rgba(255,255,255,0.7)";
+            ctx.font = "10px Sarabun, sans-serif";
+            ctx.fillText(`${Math.abs(hoverYCm).toFixed(2)} cm`, mouseX, centerY + screenHeight/2 + 15);
+        }
+
+        window.activeCalculatedLines = calculatedLines;
+    }
+
+    canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        mouseX = e.clientX - rect.left;
+        updateSimulation();
+    });
+
+    canvas.addEventListener('mouseleave', () => {
+        mouseX = -1;
+        updateSimulation();
+    });
+
+    canvas.addEventListener('click', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const centerX = canvas.width / 2;
+
+        if (window.activeCalculatedLines && window.activeCalculatedLines.length > 0) {
+            let closest = null;
+            let minDist = 15; 
+
+            window.activeCalculatedLines.forEach(line => {
+                let dist = Math.abs(line.x - clickX);
+                if (dist < minDist) {
+                    minDist = dist;
+                    closest = line;
+                }
+            });
+
+            if (closest) {
+                selectedX = closest.x;
+                selectedYCm = closest.yCm;
+                selectedInfo = closest;
+                
+                document.getElementById('selectedLabel').innerText = 
+                    `${closest.label} ที่ระยะ y = ${Math.abs(closest.yCm).toFixed(2)} cm`;
+            } else {
+                let rawYCm = (clickX - centerX) / scalePxPerCm;
+                selectedX = clickX;
+                selectedYCm = rawYCm;
+                
+                const N = parseFloat(document.getElementById('gratingN').value);
+                const L = parseFloat(document.getElementById('distanceL').value);
+                const d_m = (1 / (N * 1000));
+                let theta = Math.atan((Math.abs(rawYCm) / 100) / L);
+                let computedLambdaNm = (d_m * Math.sin(theta)) * 1e9;
+
+                selectedInfo = {
+                    lambda: computedLambdaNm,
+                    label: computedLambdaNm >= 380 && computedLambdaNm <= 750 ? "สเปกตรัมจุดเลือกอิสระ" : "นอกช่วงแสงขาว"
+                };
+
+                document.getElementById('selectedLabel').innerText = 
+                    `จุดเลือกอิสระ ที่ระยะ y = ${Math.abs(rawYCm).toFixed(2)} cm`;
+            }
+            updateSimulation();
+        }
+    });
+
+    function addRecord() {
+        if (selectedYCm === null || !selectedInfo) {
+            alert("โปรดกดคลิกเลือกแถบสีสเปกตรัมบนฉากรับแสงก่อนบันทึกค่าลงตารางครับ");
+            return;
+        }
+
+        const srcKey = document.getElementById('lightSource').value;
+        const N = parseFloat(document.getElementById('gratingN').value);
+        const L = parseFloat(document.getElementById('distanceL').value);
+        const d_m = (1 / (N * 1000));
+        
+        const srcData = sources[srcKey];
+        recordCount++;
+
+        let y_cm_abs = Math.abs(selectedYCm);
+        let thetaRad = Math.atan((y_cm_abs / 100) / L);
+        let thetaDeg = thetaRad * 180 / Math.PI;
+        
+        let m = 1;
+        let finalLambda = (d_m * Math.sin(thetaRad) / m) * 1e9;
+
+        const tbody = document.querySelector('#dataTable tbody');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><b>${recordCount}</b></td>
+            <td>${srcData.name}</td>
+            <td style="color:#22d3ee;">${selectedInfo.label}</td>
+            <td>${N}</td>
+            <td>${L.toFixed(2)}</td>
+            <td style="color:#38bdf8; font-weight:bold;">${y_cm_abs.toFixed(2)}</td>
+            <td>${thetaDeg.toFixed(2)}°</td>
+            <td><mark style="background:#0c4a6e; color:#22d3ee; padding:2px 6px; border-radius:4px;">${finalLambda.toFixed(1)} nm</mark></td>
+        `;
+        tbody.appendChild(tr);
+    }
+
+    function clearTable() {
+        document.querySelector('#dataTable tbody').innerHTML = '';
+        recordCount = 0;
+    }
+
+    window.onload = updateSimulation;
+</script>
+
+</body>
+</html>
