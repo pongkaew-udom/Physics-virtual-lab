@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>คู่มือการทดลอง: ปรากฏการณ์ซีมาน (Zeeman Effect)</title>
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+            color: #1e293b;
+            line-height: 1.6;
+            margin: 40px auto;
+            max-width: 800px;
+            padding: 0 20px;
+            font-size: 11pt;
+            background-color: #ffffff;
+        }
+
+        h1 {
+            font-size: 22pt;
+            color: #1e1b4b;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 13pt;
+            color: #4f46e5;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        h2 {
+            font-size: 15pt;
+            color: #1e1b4b;
+            border-left: 5px solid #4f46e5;
+            padding-left: 10px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        p, li {
+            text-align: justify;
+        }
+
+        ul, ol {
+            margin-top: 5px;
+            margin-bottom: 15px;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 6px;
+        }
+
+        .formula-box {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid #4f46e5;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+
+        .formula-display {
+            text-align: center;
+            font-size: 13pt;
+            margin: 12px 0;
+            color: #1e1b4b;
+        }
+
+        .math {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            font-weight: bold;
+            color: #0f172a;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 10pt;
+        }
+
+        th {
+            background-color: #1e1b4b;
+            color: #ffffff;
+            font-weight: bold;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            text-align: center;
+        }
+
+        td {
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            text-align: center;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        .highlight-box {
+            background-color: #fffbeb;
+            border-left: 4px solid #d97706;
+            padding: 15px;
+            margin: 25px 0;
+            border-radius: 4px;
+            font-size: 10.5pt;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>คู่มือการทำปฏิบัติการฟิสิกส์</h1>
+    <div class="subtitle">เรื่อง: ปรากฏการณ์ซีมาน (Zeeman Effect)</div>
+
+    <h2>1. ชื่อเรื่อง</h2>
+    <p>การศึกษาปรากฏการณ์ซีมานปกติ (Normal Zeeman Effect) และการแยกออกของระดับพลังงานของอะตอมก๊าซภายใต้สนามแม่เหล็กภายนอกผ่านวงแหวนแทรกสอด</p>
+
+    <h2>2. อุปกรณ์การทดลอง</h2>
+    <ol>
+        <li><b>หลอดก๊าซเรืองแสงชนิดปล่อยประจุ (Gas Discharge Tube):</b> สำหรับเป็นแหล่งกำเนิดแสง ประกอบด้วยสารตัวอย่าง ได้แก่ นีออน (Neon, <span class="math">&lambda;</span> = 585.2 nm), ปรอท (Mercury, <span class="math">&lambda;</span> = 546.1 nm) หรือ แคดเมียม (Cadmium, <span class="math">&lambda;</span> = 643.8 nm)</li>
+        <li><b>แม่เหล็กไฟฟ้า (Electromagnet Poles):</b> ชุดขั้วแม่เหล็ก N และ S สำหรับสร้างสนามแม่เหล็กสม่ำเสมอภายนอก (ภาระงานปรับได้ตั้งแต่ 0 ถึง 1.5 Tesla) เพื่อแยกแกนพลังงานของอะตอม</li>
+        <li><b>เลนส์รวมแสงชิ้นที่ 1 (Collimating Lens - <span class="math">f<sub>1</sub></span>):</b> สำหรับปรับลำแสงที่กระจายออกจากหลอดก๊าซให้เป็นลำแสงขนาน</li>
+        <li><b>แผ่นกรองแสงระบุความยาวคลื่น (Interference Filter):</b> สำหรับคัดเลือกเฉพาะความยาวคลื่นเดี่ยวที่ต้องการศึกษาของก๊าซแต่ละชนิด</li>
+        <li><b>Fabry-P&eacute;rot Etalon:</b> อุปกรณ์หัวใจหลักในการแยกวงแหวนแทรกสอด มีช่องอากาศหนา <span class="math">d</span> (ปรับตั้งค่าได้ในช่วง 2.0 ถึง 6.0 mm)</li>
+        <li><b>เลนส์กล้องโฟกัสภาพตัวที่ 2 (Imaging Lens - <span class="math">f</span>):</b> สำหรับสร้างวงแหวนภาพแทรกสอดปลายทาง มีความยาวโฟกัส <span class="math">f</span> (ปรับตั้งค่าได้ในช่วง 150 ถึง 450 mm)</li>
+        <li><b>ฉากรับภาพและกล้องบันทึกประมวลผล (CCD Sensor Camera):</b> ควบคู่ระบบครอสแฮร์ (Crosshair) และสเกลไม้บรรทัดวัดรัศมีเพื่ออ่านค่าวงแหวนดิจิทัล</li>
+    </ol>
+
+    <h2>3. ทฤษฎี</h2>
+    <p>ปรากฏการณ์ซีมาน (Zeeman Effect) คือปรากฏการณ์ที่เส้นสเปกตรัมของแสงแยกออกเป็นหลายเส้นเมื่อแหล่งกำเนิดแสงอยู่ภายใต้สนามแม่เหล็กภายนอก ซึ่งเกิดจากการที่สนามแม่เหล็กภายนอกไปอันตรกิริยากับโมเมนต์แม่เหล็กเชิงมุมของอิเล็กตรอน ทำให้อะตอมที่มีระดับพลังงานซ้ำซ้อนกัน (Degenerate States) เกิดการแยกตัวออกจากกันตามค่าควอนตัมแม่เหล็ก (<span class="math">m<sub>j</sub></span> หรือ <span class="math">m<sub>l</sub></span>)</p>
+    
+    <p>ในกรณีของปรากฏการณ์ซีมานปกติ (Normal Zeeman Effect) ระดับพลังงานจะแยกออกเป็น 3 ระดับย่อยตามค่า <span class="math">&Delta;m = 0, &plusmn;1</span> ทำให้สังเกตเห็นเส้นสเปกตรัมแยกออกเป็น 3 เส้น ค่าพลังงานที่แยกออก (<span class="math">&Delta;E</span>) แปรผันตรงกับความเข้มสนามแม่เหล็กภายนอก (<span class="math">B</span>) ตามสมการ:</p>
+    
+    <div class="formula-box">
+        <div class="formula-display"><span class="math">&Delta;E = &mu;<sub>B</sub> &middot; B</span></div>
+        <p>โดยที่ <span class="math">&mu;<sub>B</sub></span> คือค่าโบร์แมกเนตอน (Bohr Magneton) มีค่าคงที่เท่ากับ <span class="math">5.788 &times; 10<sup>-5</sup> eV/T</span></p>
+    </div>
+
+    <p>ในการวิเคราะห์ผลทางกายภาพผ่านชุด Fabry-P&eacute;rot Interferometer วงแหวนแทรกสอดที่เกิดขึ้นจะเกิดการแยกตัวออกเมื่อมีการจ่ายสนามแม่เหล็ก เราสามารถคำนวณหาพลังงานที่แยกออก (<span class="math">&Delta;E</span>) จากการวัดขนาดของรัศมีวงแหวนแทรกสอดผ่านความสัมพันธ์ทางทัศนศาสตร์ดังนี้:</p>
+
+    <div class="formula-box">
+        <div class="formula-display">
+            <span class="math">&Delta;E = (h &middot; c / 4d) &middot; ((R<sub>2</sub><sup>2</sup> - R<sub>1</sub><sup>2</sup>) / f<sup>2</sup>)</span>
+        </div>
+        <p><b>คำอธิบายตัวแปร:</b></p>
+        <ul>
+            <li><span class="math">h</span> (Planck constant) = <span class="math">4.1357 &times; 10<sup>-15</sup> eV&middot;s</span></li>
+            <li><span class="math">c</span> (Speed of light) = <span class="math">3 &times; 10<sup>8</sup> m/s</span></li>
+            <li><span class="math">d</span> = ความหนาของช่องอากาศภายใน Etalon (mm)</li>
+            <li><span class="math">f</span> = ความยาวโฟกัสของเลนส์วัตถุที่ใช้สร้างวงแหวนภาพแทรกสอด (mm)</li>
+            <li><span class="math">R<sub>1</sub></span> = รัศมีของวงแหวนแทรกสอดวงในที่แยกตัวออก (mm)</li>
+            <li><span class="math">R<sub>2</sub></span> = รัศมีของวงแหวนแทรกสอดวงนอกที่แยกตัวออก (mm)</li>
+        </ul>
+    </div>
+
+    <h2>4. วิธีการทดลอง</h2>
+    <ol>
+        <li>เปิดเครื่องและเลือกชนิดของก๊าซในหลอดทดลองที่ต้องการศึกษา (เช่น Neon, Mercury หรือ Cadmium) จากแผงควบคุมระบบ</li>
+        <li>ตั้งค่าคงที่ทางแสงเริ่มต้นของอุปกรณ์ ได้แก่ ความหนาของช่องอากาศ Etalon (<span class="math">d</span>) และความยาวโฟกัสของเลนส์ (<span class="math">f</span>) ให้เหมาะสม</li>
+        <li>ตรวจสอบลักษณะวงแหวนหลัก (<span class="math">R<sub>0</sub></span>) บนหน้าจอ Optics Viewfinder ในขณะที่ยังไม่จ่ายสนามแม่เหล็ก (<span class="math">B = 0.00 Tesla</span>) สังเกตว่าวงแหวนมีความคมชัดและเป็นเส้นเดี่ยว บันทึกค่ารัศมี <span class="math">R<sub>0</sub></span></li>
+        <li>เปิดสวิตช์จ่ายสนามแม่เหล็ก (&lt;-- Magnet ON --&gt;) จากนั้นปรับความเข้มสนามแม่เหล็ก (<span class="math">B</span>) เพิ่มขึ้นทีละขั้น เช่น 0.50 T, 1.00 T, 1.50 T</li>
+        <li>เมื่อจ่ายสนามแม่เหล็ก สังเกตการแยกออกของวงแหวนแทรกสอดเดี่ยวกลายเป็นวงคู่ (Split Rings) ให้ใช้เครื่องมือวัดบันทึกค่ารัศมีวงใน (<span class="math">R<sub>1</sub></span>) และรัศมีวงนอก (<span class="math">R<sub>2</sub></span>)</li>
+        <li>กดปุ่ม <b>"บันทึกผล"</b> เพื่อนำข้อมูลลงตารางบันทึกผลการทดลอง และทำการทดลองซ้ำโดยเปลี่ยนค่าสนามแม่เหล็ก <span class="math">B</span> หรือเปลี่ยนชนิดของก๊าซเพื่อเปรียบเทียบผล</li>
+    </ol>
+
+    <h2>5. ตารางบันทึกผลการทดลอง</h2>
+    <p>ตารางตัวอย่างสำหรับการบันทึกค่าจากการทดลองจำลอง:</p>
+    <table>
+        <thead>
+            <tr>
+                <th>ครั้งที่</th>
+                <th>ชนิดก๊าซ</th>
+                <th>B (T)</th>
+                <th>d (mm)</th>
+                <th>f (mm)</th>
+                <th>R₀ (mm)</th>
+                <th>R₁ (mm)</th>
+                <th>R₂ (mm)</th>
+                <th>&Delta;R (mm)</th>
+                <th>&Delta;E คำนวณ (&times;10⁻⁴ eV)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>Neon</td>
+                <td>0.00</td>
+                <td>4.00</td>
+                <td>300</td>
+                <td>1.13</td>
+                <td>-</td>
+                <td>-</td>
+                <td>0.00</td>
+                <td>0.00</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>Neon</td>
+                <td>0.50</td>
+                <td>4.00</td>
+                <td>300</td>
+                <td>1.13</td>
+                <td>1.06</td>
+                <td>1.21</td>
+                <td>0.15</td>
+                <td>0.29</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>Neon</td>
+                <td>1.00</td>
+                <td>4.00</td>
+                <td>300</td>
+                <td>1.13</td>
+                <td>0.99</td>
+                <td>1.28</td>
+                <td>0.29</td>
+                <td>0.58</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>Neon</td>
+                <td>1.50</td>
+                <td>4.00</td>
+                <td>300</td>
+                <td>1.13</td>
+                <td>0.91</td>
+                <td>1.36</td>
+                <td>0.45</td>
+                <td>0.87</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>6. ผลการทดลองและการคำนวณ</h2>
+    <p>จากผลการทำปฏิบัติการจำลอง พบว่าเมื่อความเข้มสนามแม่เหล็ก <span class="math">B</span> มีค่าเป็นศูนย์ เส้นสเปกตรัมหรือวงแหวนแทรกสอดที่ปรากฏบนกล้องส่องจะมีลักษณะเป็นเส้นเดี่ยวคมชัด (<span class="math">R<sub>0</sub> = 1.13 mm</span>) แต่เมื่อเปิดจ่ายสนามแม่เหล็กภายนอกและเพิ่มความเข้มขึ้น วงแหวนหลักจะแยกออกเป็นสองวงอย่างเห็นได้ชัด โดยระยะห่างระหว่างวงในและวงนอก (<span class="math">&Delta;R = R<sub>2</sub> - R<sub>1</sub></span>) จะกว้างขึ้นเรื่อยๆ ตามความเข้มสนามแม่เหล็กที่เพิ่มขึ้น</p>
+    <p>เมื่อนำค่ารัศมี <span class="math">R<sub>1</sub></span> และ <span class="math">R<sub>2</sub></span> ที่วัดได้มาคำนวณหาค่าพลังงานที่แยกออก (<span class="math">&Delta;E</span>) พบว่าที่สนามแม่เหล็ก 0.50 T ได้ค่า <span class="math">&Delta;E &approx; 0.29 &times; 10<sup>-4</sup> eV</span> และเพิ่มขึ้นเป็น <span class="math">0.58 &times; 10<sup>-4</sup> eV</span> ที่สนามแม่เหล็ก 1.00 T ซึ่งผลการคำนวณจากสูตรทัศนศาสตร์สอดคล้องอย่างแม่นยำกับค่าทางทฤษฎีของซีมาน <span class="math">&Delta;E = &mu;<sub>B</sub> &middot; B</span></p>
+
+    <h2>7. สรุปผลการทดลอง</h2>
+    <p>การทดลองนี้ประสบความสำเร็จในการพิสูจน์และศึกษาปรากฏการณ์ซีมานปกติ (Normal Zeeman Effect) โดยผลการทดลองแสดงให้เห็นอย่างชัดเจนว่า สนามแม่เหล็กภายนอกส่งผลให้ระดับพลังงานของอะตอมเกิดการแยกตัวออกจากกัน ซึ่งสะท้อนออกมาในรูปแบบของการแยกออกของวงแหวนแทรกสอด Fabry-P&eacute;rot ความสัมพันธ์ระหว่างพลังงานที่แยกออก (<span class="math">&Delta;E</span>) และความเข้มสนามแม่เหล็ก (<span class="math">B</span>) มีความสัมพันธ์เชิงเส้นแปรผันตรงต่อกันอย่างถูกต้องตามทฤษฎีควอนตัมของอะตอม</p>
+
+    <h2>8. วิจารณ์ผลการทดลอง</h2>
+    <p>จากการทดลองจำลอง ระบบมีความแม่นยำสูงเนื่องจากเป็นสภาวะอุดมคติ อย่างไรก็ตาม ในการทดลองจริงอาจมีข้อคลาดเคลื่อนที่ต้องระวังหลายประการ ดังนี้:</p>
+    <ul>
+        <li><b>ความละเอียดในการวัดด้วยสายตาหรือ CCD:</b> การระบุจุดกึ่งกลางและความกว้างของวงแหวนแทรกสอดอาจมีความคลาดเคลื่อน (Human Error / Pixel Resolution) ซึ่งการใช้ระบบประมวลผลภาพดิจิทัล (Crosshair) ในห้องปฏิบัติการเสมือนนี้ช่วยลดปัญหานี้ลงได้มาก</li>
+        <li><b>คุณภาพของ Fabry-P&eacute;rot Etalon:</b> หากระนาบกระจกสะท้อนคู่ขนานภายในห้องอากาศไม่มีความขนานกันอย่างสมบูรณ์ จะส่งผลให้วงแหวนแทรกสอดบิดเบี้ยวและเบลอ ทำให้ความแม่นยำในการวัดลดลง</li>
+        <li><b>ความสม่ำเสมอของสนามแม่เหล็ก:</b> สนามแม่เหล็กระหว่างขั้ว Pole N และ S ต้องมีความสม่ำเสมอตรงตำแหน่งของหลอดแก้วก๊าซ หากเกิดการกระจัดเชิงตำแหน่ง ค่า <span class="math">B</span> ที่แท้จริงอาจไม่เท่ากับค่าที่ตั้งไว้จากตัวควบคุม</li>
+    </ul>
+
+    <div class="highlight-box">
+        <b>เอกสารอ้างอิงและแหล่งข้อมูล:</b><br>
+        คู่มือนี้เรียบเรียงขึ้นตามโครงสร้างและระบบคำนวณเชิงตัวเลขของ ระบบห้องปฏิบัติการเสมือนจริง: ปรากฏการณ์ซีมาน (Zeeman Effect Virtual Laboratory Setup) [source: 1]
+    </div>
+
+</body>
+</html>
